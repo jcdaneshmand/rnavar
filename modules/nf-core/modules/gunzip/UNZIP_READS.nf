@@ -1,5 +1,5 @@
 process UNZIP_READS {
-    label 'process_low'
+    label 'process_long'
 
     conda (params.enable_conda ? "conda-forge::sed=4.7" : null)
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
