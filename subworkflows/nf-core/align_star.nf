@@ -4,6 +4,7 @@
 
 include { STAR_ALIGN        } from '../../modules/nf-core/modules/star/align/main'
 include { BAM_SORT_SAMTOOLS } from './bam_sort_samtools'
+include { UNZIP_READS        } from '../../modules/nf-core/modules/gunzip/UNZIP_READS'
 
 workflow ALIGN_STAR {
     take:
@@ -15,14 +16,15 @@ workflow ALIGN_STAR {
     seq_center              // value:   sequencing centre
 
     main:
-
+    ch_unzipped_fastq = Channel.empty()
     ch_versions = Channel.empty()
 
-    //
-    // Map reads with STAR
-    //
+    // Call the UNZIP_READS process
+    UNZIP_READS(reads)
+
     STAR_ALIGN (
-        reads,
+        //reads,
+        UNZIP_READS.out.ch_unzipped_fastq, // Use the unzipped fastq files as input
         index,
         gtf,
         star_ignore_sjdbgtf,
@@ -32,8 +34,9 @@ workflow ALIGN_STAR {
     ch_versions = ch_versions.mix(STAR_ALIGN.out.versions.first())
 
     //
-    // Sort, index BAM file and run samtools stats, flagstat and idxstats
+    // Sort, index BAM file and run samtools stats, flagstat, and idxstats
     //
+
     BAM_SORT_SAMTOOLS (
         STAR_ALIGN.out.bam
     )
